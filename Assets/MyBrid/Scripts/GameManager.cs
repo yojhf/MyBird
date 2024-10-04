@@ -2,27 +2,51 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+namespace MyBird
 {
-    public static GameManager instance; 
-
-    public bool IsStart { get; set; }
-
-    private void Awake()
+    public class GameManager : MonoBehaviour
     {
-        instance = this;
-    }
+        public static GameManager instance;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        IsStart = false;
-    }
+        public bool IsStart { get; set; }
+        public bool IsDeath { get; set; }
+        public int Score { get; set; }
+        public int BestScore { get; set; }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+        private void Awake()
+        {
+            instance = this;
+        }
 
+        // Start is called before the first frame update
+        void Start()
+        {
+            IsStart = false;
+            IsDeath = false;
+            Score = 0;
+            //PlayerPrefs.DeleteAll();
+
+
+            BestScore = PlayerPrefs.GetInt("BestScore");
+        }
+
+        public void GetBestScore()
+        {
+            if (Score > BestScore)
+            {
+                BestScore = Score;
+
+                PlayerPrefs.SetInt("BestScore", BestScore);
+                UIManager.instance.newUI_text.text = "NEW";
+            }
+            else if (Score == BestScore)
+            {
+                UIManager.instance.newUI_text.text = "SAME";
+            }
+            else
+            {
+                UIManager.instance.newUI_text.text = "";
+            }
+        }
+    }
 }

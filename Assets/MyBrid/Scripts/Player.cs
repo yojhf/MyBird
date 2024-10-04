@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
 
@@ -20,6 +21,8 @@ namespace MyBird
 
         [SerializeField] private float readyPower = 1f;
 
+        [SerializeField] private AudioClip getPoint;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -29,15 +32,30 @@ namespace MyBird
         // Update is called once per frame
         void Update()
         {
+            PlayerRot();
+
+            if (GameManager.instance.IsDeath == true)
+            {
+                return;
+            }
+
+            StartGameSet();
             InputBird();
             ReadyBird();
-            PlayerRot();
             Move();
         }
 
         private void FixedUpdate()
         {
             Jump();
+        }
+        void StartGameSet()
+        {
+            if (GameManager.instance.IsStart == false && Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
+            {
+                GameManager.instance.IsStart = true;
+                UIManager.instance.readyUI.SetActive(false);
+            }
         }
 
         void Jump()
@@ -54,12 +72,6 @@ namespace MyBird
         }
         void InputBird()
         {
-
-            if (isJump == true && GameManager.instance.IsStart == false)
-            {
-                GameManager.instance.IsStart = true;
-            }
-
             if (isJump == false)
             {
                 if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
@@ -69,9 +81,10 @@ namespace MyBird
             }
         }
 
+
         void Move()
         {
-            if(GameManager.instance.IsStart == false)
+            if(GameManager.instance.IsStart == false || GameManager.instance.IsDeath == true)
             {
                 return;
             }
@@ -122,7 +135,51 @@ namespace MyBird
             }
         }
 
+        void Die()
+        {
+            if (GameManager.instance.IsDeath == true)
+            {
+                return;
+            }
 
+
+            GameManager.instance.IsDeath = true;
+            UIManager.instance.gameoverUI.SetActive(true);
+            GameManager.instance.GetBestScore();
+
+
+        }
+
+        void GetPoint()
+        {
+            if (GameManager.instance.IsDeath == true)
+            {
+                return;
+            }
+            //getPoint.;
+            GameManager.instance.Score++;
+        }
+
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if(collision.gameObject.tag == "Ground")
+            {
+                Die();
+            }
+        }
+
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            if(collision.CompareTag("Pipe"))
+            {
+                Die();
+            }
+            else if(collision.CompareTag("Point"))
+            {
+                GetPoint();
+            }
+
+        }
 
 
     }
