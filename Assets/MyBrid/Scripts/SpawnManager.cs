@@ -15,6 +15,7 @@ namespace MyBird
         [SerializeField] private float minSpawnTime = 0.95f;
         [SerializeField] private float maxSpawnTime = 1.05f;
 
+        public static float levelTime = 0f;
         private GameObject tmp_Pipe;
 
         // Start is called before the first frame update
@@ -37,7 +38,8 @@ namespace MyBird
             while (GameManager.instance.IsDeath == false)
             {
                 float posY = Random.Range(minPos, maxPos);
-                coolTime = Random.Range(minSpawnTime, maxSpawnTime);
+
+                coolTime = Random.Range((minSpawnTime - levelTime), maxSpawnTime);
 
                 Vector2 pos = new Vector2(PipePar.position.x, posY);
 
@@ -50,5 +52,8 @@ namespace MyBird
                 yield return new WaitForSeconds(coolTime);
             }
         }
+
+
+
     }
 }

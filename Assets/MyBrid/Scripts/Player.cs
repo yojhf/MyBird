@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 
 namespace MyBird
@@ -21,12 +17,16 @@ namespace MyBird
 
         [SerializeField] private float readyPower = 1f;
 
+        AudioSource audiosource;
         [SerializeField] private AudioClip getPoint;
+        [SerializeField] private AudioClip die;
+        [SerializeField] private AudioClip wing;
 
         // Start is called before the first frame update
         void Start()
         {
             rb = GetComponent<Rigidbody2D>();
+            audiosource = GetComponent<AudioSource>();
         }
 
         // Update is called once per frame
@@ -51,11 +51,25 @@ namespace MyBird
         }
         void StartGameSet()
         {
+
+#if UNITY_EDITOR
             if (GameManager.instance.IsStart == false && Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
             {
                 GameManager.instance.IsStart = true;
                 UIManager.instance.readyUI.SetActive(false);
             }
+
+#elif UNITY_ANDROID
+            if (GameManager.instance.IsStart == false && Input.touchCount > 0)
+            {
+                GameManager.instance.IsStart = true;
+                UIManager.instance.readyUI.SetActive(false);             
+            }
+
+#endif
+
+
+
         }
 
         void Jump()
@@ -72,13 +86,38 @@ namespace MyBird
         }
         void InputBird()
         {
+#if UNITY_EDITOR
+
             if (isJump == false)
             {
                 if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
                 {
                     isJump = true;
+                    PlayAudio(wing);
                 }
             }
+#elif UNITY_ANDROID
+
+   if (isJump == false)
+            {
+                if (Input.touchCount > 0)
+                {
+                    Touch touch = Input.GetTouch(0);
+
+                    if (touch.phase == TouchPhase.Began)
+                    {
+                        isJump = true;
+                        PlayAudio(wing);
+                    }
+
+                }
+            }
+        
+#endif
+
+
+
+
         }
 
 
@@ -146,7 +185,7 @@ namespace MyBird
             GameManager.instance.IsDeath = true;
             UIManager.instance.gameoverUI.SetActive(true);
             GameManager.instance.GetBestScore();
-
+            PlayAudio(die);
 
         }
 
@@ -156,8 +195,28 @@ namespace MyBird
             {
                 return;
             }
-            //getPoint.;
+
+            PlayAudio(getPoint);
             GameManager.instance.Score++;
+
+            SpawnTimeCon();
+        }
+
+        void SpawnTimeCon()
+        {
+            if (GameManager.instance.Score % 10 == 0)
+            {
+                SpawnManager.levelTime += 0.05f;
+            }
+        }
+
+
+
+        void PlayAudio(AudioClip audio)
+        {
+            audiosource.clip = audio;
+
+            audiosource.Play();
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
